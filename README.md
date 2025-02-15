@@ -13,6 +13,7 @@ A command-line tool that converts text to speech using Eleven Labs' Text-to-Spee
 - 📚 Support for large text files (automatic chunking)
 - 💾 Organized output with timestamped directories
 - 📋 Comprehensive metadata preservation
+- 🔗 Smart URL and web reference processing
 
 ## Prerequisites 📋
 
@@ -81,6 +82,31 @@ sudo apt-get install ffmpeg
    - Option 2: Provide a file path (`.txt`, `.md`, or `.docx`)
 
 3. Listen to your text being read aloud!
+
+### URL Processing 🔗
+
+The application automatically processes URLs and web references to make them more natural for speech:
+
+- **Common Platforms**
+  ```
+  https://github.com/user/repo -> "GitHub at github.com slash user slash repo"
+  https://youtube.com/watch?v=123 -> "YouTube video at youtube.com slash watch..."
+  ```
+
+- **General URLs**
+  ```
+  https://example.com/path -> "website example.com at path slash path"
+  http://site.org -> "website site dot org"
+  ```
+
+- **Web Terms**
+  - `.com` → "dot com"
+  - `.org` → "dot org"
+  - `/` → "slash"
+  - `@` → "at"
+  - `_` → "underscore"
+
+This makes the audio output more natural when reading documents containing web references.
 
 ### Output Organization 📂
 

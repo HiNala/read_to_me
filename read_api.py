@@ -6,11 +6,13 @@ This module manages API calls and audio playback functionality.
 
 import os
 import tempfile
+import re
 from typing import Optional, List, Tuple
 from datetime import datetime
 import json
 from pathlib import Path
 import requests
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 from pydub import AudioSegment
 from pydub.playback import play
@@ -27,6 +29,65 @@ MAX_CHARS_PER_CHUNK = 4000  # Safe limit to stay under the 10,000 credit limit
 
 # Output directory structure
 BASE_OUTPUT_DIR = Path("outputs")
+
+def process_urls(text: str) -> str:
+    """
+    Process URLs in text to make them more speech-friendly.
+    
+    Args:
+        text (str): The input text containing URLs
+        
+    Returns:
+        str: Text with processed URLs
+    """
+    # Regular expression for finding URLs
+    url_pattern = r'https?://(?:www\.)?([^\s<>\[\]]+)'
+    
+    def url_replacer(match):
+        url = match.group(0)
+        parsed = urlparse(url)
+        
+        # Extract domain without www and extension
+        domain = parsed.netloc.replace('www.', '')
+        
+        # Handle common domains specially
+        if 'github.com' in domain:
+            return f"GitHub at {domain}{parsed.path}"
+        elif 'youtube.com' in domain or 'youtu.be' in domain:
+            return f"YouTube video at {domain}{parsed.path}"
+        elif 'linkedin.com' in domain:
+            return f"LinkedIn profile at {domain}{parsed.path}"
+        elif 'twitter.com' in domain or 'x.com' in domain:
+            return f"Twitter post at {domain}{parsed.path}"
+        
+        # For other URLs, make them more readable
+        if parsed.path and parsed.path != '/':
+            return f"website {domain} at path {parsed.path}"
+        else:
+            return f"website {domain}"
+    
+    # Replace URLs in text
+    processed_text = re.sub(url_pattern, url_replacer, text)
+    
+    # Make common web terms more speech-friendly
+    replacements = {
+        'http://': 'H T T P',
+        'https://': 'H T T P S',
+        '.com': ' dot com',
+        '.org': ' dot org',
+        '.net': ' dot net',
+        '.edu': ' dot edu',
+        '.gov': ' dot gov',
+        '.io': ' dot I O',
+        '/': ' slash ',
+        '@': ' at ',
+        '_': ' underscore '
+    }
+    
+    for old, new in replacements.items():
+        processed_text = processed_text.replace(old, new)
+    
+    return processed_text
 
 def create_run_directory() -> Tuple[Path, str]:
     """
@@ -76,6 +137,9 @@ def split_text(text: str) -> List[str]:
     Returns:
         List[str]: List of text chunks
     """
+    # Process URLs before splitting
+    text = process_urls(text)
+    
     # Split text into sentences (basic implementation)
     sentences = [s.strip() for s in text.replace('\n', ' ').split('.') if s.strip()]
     
