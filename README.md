@@ -11,8 +11,8 @@ A command-line tool that converts text to speech using Eleven Labs' Text-to-Spee
 - 🛡️ Secure API key management
 - ⚡ Simple and intuitive interface
 - 📚 Support for large text files (automatic chunking)
-- 💾 Automatic saving of audio outputs with timestamps
-- 📋 Input text and metadata preservation
+- 💾 Organized output with timestamped directories
+- 📋 Comprehensive metadata preservation
 
 ## Prerequisites 📋
 
@@ -82,28 +82,42 @@ sudo apt-get install ffmpeg
 
 3. Listen to your text being read aloud!
 
-### Output Files
-The application automatically saves all generated content in the `output` directory:
-- 🎵 Audio files (`.mp3`) with timestamps
-- 📄 JSON files containing:
-  - Original input text
-  - Timestamp
-  - Text length
-  - Reference to the audio file
+### Output Organization 📂
 
-Example output files:
+Each time you run the program, it creates a new timestamped directory in the `outputs` folder:
+
 ```
-output/
-├── read_to_me_20240315_143022.mp3    # Audio file
-└── read_to_me_20240315_143022_info.json  # Text and metadata
+outputs/
+└── run_20240315_143022/          # Timestamped run directory
+    ├── text_info.json            # Metadata and original text
+    ├── audio.mp3                 # Single audio file (if text is small)
+    │   # OR for large texts:
+    ├── part_01.mp3              # First chunk of audio
+    ├── part_02.mp3              # Second chunk of audio
+    ├── part_XX.mp3              # Additional chunks
+    └── combined.mp3             # All chunks combined (if multiple parts)
 ```
+
+#### Metadata File (text_info.json)
+Each run's metadata file contains:
+- Timestamp of the conversion
+- Original text content
+- Text length
+- List of generated audio files
+
+This organization makes it easy to:
+- Keep track of different conversions
+- Reference specific audio generations
+- Review the original text content
+- Access individual parts of long conversions
 
 ### Large Text Files
 For large text files, the application automatically:
 - Splits the text into manageable chunks
 - Processes each chunk separately
-- Combines the audio seamlessly
-- Plays the complete audio
+- Saves individual chunk audio files
+- Combines them into a single audio file
+- Preserves all files for reference
 
 ## Troubleshooting 🔧
 
@@ -113,6 +127,7 @@ For large text files, the application automatically:
   - macOS/Linux: Check if `ffmpeg` is in your PATH
 - **File Not Found?** Check that the file path is correct and the file exists.
 - **Package Missing?** Run `pip install -r requirements.txt` to install all dependencies.
+- **Output Files Missing?** Check if you have write permissions in the project directory.
 
 ## Contributing 🤝
 
