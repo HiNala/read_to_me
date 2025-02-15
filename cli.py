@@ -19,6 +19,8 @@ def get_text_input() -> Optional[str]:
 
         elif choice == "2":
             file_path = input("\n📂 Enter the file path:\n> ").strip()
+            # Remove quotes if present
+            file_path = file_path.strip('"\'')
             result = read_file(file_path)
             if result:
                 return result
@@ -30,19 +32,23 @@ def get_text_input() -> Optional[str]:
 def read_file(file_path: str) -> Optional[str]:
     """Read text from a .txt, .md, or .docx file."""
     
+    # Normalize path separators for Windows
+    file_path = os.path.normpath(file_path)
+    
     if not os.path.exists(file_path):
-        print("\n❌ File not found. Please check the path and try again.")
+        print(f"\n❌ File not found at: {file_path}")
+        print("Please check that the file exists and the path is correct.")
         return None
 
     _, ext = os.path.splitext(file_path)
     supported_extensions = {".txt", ".md", ".docx"}
 
-    if ext not in supported_extensions:
+    if ext.lower() not in supported_extensions:
         print(f"\n❌ Unsupported file format. Use one of: {', '.join(supported_extensions)}")
         return None
 
     try:
-        if ext in {".txt", ".md"}:
+        if ext.lower() in {".txt", ".md"}:
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read().strip()
                 if not content:
@@ -50,7 +56,7 @@ def read_file(file_path: str) -> Optional[str]:
                     return None
                 return content
                 
-        elif ext == ".docx":
+        elif ext.lower() == ".docx":
             try:
                 from docx import Document
             except ImportError:

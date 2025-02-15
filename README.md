@@ -10,12 +10,33 @@ A command-line tool that converts text to speech using Eleven Labs' Text-to-Spee
 - 🔊 Instant audio playback
 - 🛡️ Secure API key management
 - ⚡ Simple and intuitive interface
+- 📚 Support for large text files (automatic chunking)
 
 ## Prerequisites 📋
 
 - Python 3.8 or higher
 - FFmpeg (required for audio playback)
 - Eleven Labs API key
+
+### Installing FFmpeg
+
+#### Windows
+1. Run the provided installation script:
+   ```bash
+   powershell -ExecutionPolicy Bypass -File install_ffmpeg.ps1
+   ```
+2. Restart your terminal after installation
+
+#### macOS
+```bash
+brew install ffmpeg
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+sudo apt-get update
+sudo apt-get install ffmpeg
+```
 
 ## Installation 🚀
 
@@ -59,10 +80,19 @@ A command-line tool that converts text to speech using Eleven Labs' Text-to-Spee
 
 3. Listen to your text being read aloud!
 
+### Large Text Files
+For large text files, the application automatically:
+- Splits the text into manageable chunks
+- Processes each chunk separately
+- Combines the audio seamlessly
+- Plays the complete audio
+
 ## Troubleshooting 🔧
 
 - **Missing API Key?** Make sure you have created a `.env` file with your Eleven Labs API key.
-- **Audio Not Playing?** Ensure FFmpeg is installed on your system.
+- **Audio Not Playing?** Ensure FFmpeg is installed correctly:
+  - Windows: Run `install_ffmpeg.ps1` script
+  - macOS/Linux: Check if `ffmpeg` is in your PATH
 - **File Not Found?** Check that the file path is correct and the file exists.
 - **Package Missing?** Run `pip install -r requirements.txt` to install all dependencies.
 
@@ -77,4 +107,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments 🙏
 
 - [Eleven Labs](https://elevenlabs.io/) for their excellent Text-to-Speech API
+- [FFmpeg](https://ffmpeg.org/) for audio processing capabilities
 - All the open-source libraries that made this project possible 
