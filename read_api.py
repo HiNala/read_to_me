@@ -7,6 +7,9 @@ This module manages API calls and audio playback functionality.
 import os
 import tempfile
 from typing import Optional, List
+from datetime import datetime
+import json
+from pathlib import Path
 import requests
 from dotenv import load_dotenv
 from pydub import AudioSegment
@@ -21,6 +24,34 @@ API_URL = "https://api.elevenlabs.io/v1/text-to-speech"
 DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"  # Default voice
 DEFAULT_MODEL = "eleven_multilingual_v2"
 MAX_CHARS_PER_CHUNK = 4000  # Safe limit to stay under the 10,000 credit limit
+
+# Output directory for saved files
+OUTPUT_DIR = Path("output")
+
+def ensure_output_directory():
+    """Ensure the output directory exists."""
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
+def generate_output_filename(extension: str) -> str:
+    """Generate a timestamped filename."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"read_to_me_{timestamp}{extension}"
+
+def save_text_info(text: str, audio_filename: str):
+    """Save input text and metadata to a JSON file."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    info = {
+        "timestamp": timestamp,
+        "text_length": len(text),
+        "audio_file": audio_filename,
+        "text_content": text
+    }
+    
+    info_filename = audio_filename.replace(".mp3", "_info.json")
+    info_path = OUTPUT_DIR / info_filename
+    
+    with open(info_path, "w", encoding="utf-8") as f:
+        json.dump(info, f, indent=2, ensure_ascii=False)
 
 def split_text(text: str) -> List[str]:
     """
@@ -73,6 +104,16 @@ def text_to_speech(text: str) -> Optional[bool]:
     if not ELEVEN_LABS_API_KEY:
         print("\n❌ API key missing! Set ELEVEN_LABS_API_KEY in your .env file.")
         return None
+
+    # Ensure output directory exists
+    ensure_output_directory()
+    
+    # Generate output filename
+    audio_filename = generate_output_filename(".mp3")
+    audio_path = OUTPUT_DIR / audio_filename
+    
+    # Save text information
+    save_text_info(text, audio_filename)
 
     # Split text into manageable chunks
     chunks = split_text(text)
@@ -153,6 +194,12 @@ def text_to_speech(text: str) -> Optional[bool]:
         if all_audio_segments:
             print("\n🔊 Playing generated audio...")
             combined_audio = sum(all_audio_segments)
+            
+            # Save the combined audio
+            combined_audio.export(audio_path, format="mp3")
+            print(f"\n💾 Audio saved to: {audio_path}")
+            
+            # Play the audio
             play(combined_audio)
             return True
         return None

@@ -11,6 +11,8 @@ A command-line tool that converts text to speech using Eleven Labs' Text-to-Spee
 - 🛡️ Secure API key management
 - ⚡ Simple and intuitive interface
 - 📚 Support for large text files (automatic chunking)
+- 💾 Automatic saving of audio outputs with timestamps
+- 📋 Input text and metadata preservation
 
 ## Prerequisites 📋
 
@@ -79,6 +81,22 @@ sudo apt-get install ffmpeg
    - Option 2: Provide a file path (`.txt`, `.md`, or `.docx`)
 
 3. Listen to your text being read aloud!
+
+### Output Files
+The application automatically saves all generated content in the `output` directory:
+- 🎵 Audio files (`.mp3`) with timestamps
+- 📄 JSON files containing:
+  - Original input text
+  - Timestamp
+  - Text length
+  - Reference to the audio file
+
+Example output files:
+```
+output/
+├── read_to_me_20240315_143022.mp3    # Audio file
+└── read_to_me_20240315_143022_info.json  # Text and metadata
+```
 
 ### Large Text Files
 For large text files, the application automatically:
