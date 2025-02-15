@@ -6,7 +6,7 @@ This module manages API calls and audio playback functionality.
 
 import os
 import tempfile
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from datetime import datetime
 import json
 from pathlib import Path
@@ -25,31 +25,44 @@ DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"  # Default voice
 DEFAULT_MODEL = "eleven_multilingual_v2"
 MAX_CHARS_PER_CHUNK = 4000  # Safe limit to stay under the 10,000 credit limit
 
-# Output directory for saved files
-OUTPUT_DIR = Path("output")
+# Output directory structure
+BASE_OUTPUT_DIR = Path("outputs")
 
-def ensure_output_directory():
-    """Ensure the output directory exists."""
-    OUTPUT_DIR.mkdir(exist_ok=True)
-
-def generate_output_filename(extension: str) -> str:
-    """Generate a timestamped filename."""
+def create_run_directory() -> Tuple[Path, str]:
+    """
+    Create a timestamped directory for this run.
+    
+    Returns:
+        Tuple[Path, str]: (Path to run directory, timestamp string)
+    """
+    # Ensure base output directory exists
+    BASE_OUTPUT_DIR.mkdir(exist_ok=True)
+    
+    # Create timestamped directory name
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return f"read_to_me_{timestamp}{extension}"
+    run_dir = BASE_OUTPUT_DIR / f"run_{timestamp}"
+    run_dir.mkdir(exist_ok=True)
+    
+    return run_dir, timestamp
 
-def save_text_info(text: str, audio_filename: str):
-    """Save input text and metadata to a JSON file."""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def save_text_info(text: str, run_dir: Path, timestamp: str, audio_files: List[str]):
+    """
+    Save input text and metadata to a JSON file.
+    
+    Args:
+        text (str): Original input text
+        run_dir (Path): Directory for this run
+        timestamp (str): Run timestamp
+        audio_files (List[str]): List of generated audio files
+    """
     info = {
-        "timestamp": timestamp,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "text_length": len(text),
-        "audio_file": audio_filename,
+        "audio_files": audio_files,
         "text_content": text
     }
     
-    info_filename = audio_filename.replace(".mp3", "_info.json")
-    info_path = OUTPUT_DIR / info_filename
-    
+    info_path = run_dir / "text_info.json"
     with open(info_path, "w", encoding="utf-8") as f:
         json.dump(info, f, indent=2, ensure_ascii=False)
 
@@ -105,15 +118,9 @@ def text_to_speech(text: str) -> Optional[bool]:
         print("\n❌ API key missing! Set ELEVEN_LABS_API_KEY in your .env file.")
         return None
 
-    # Ensure output directory exists
-    ensure_output_directory()
-    
-    # Generate output filename
-    audio_filename = generate_output_filename(".mp3")
-    audio_path = OUTPUT_DIR / audio_filename
-    
-    # Save text information
-    save_text_info(text, audio_filename)
+    # Create run directory
+    run_dir, timestamp = create_run_directory()
+    print(f"\n📁 Created output directory: {run_dir}")
 
     # Split text into manageable chunks
     chunks = split_text(text)
@@ -128,12 +135,19 @@ def text_to_speech(text: str) -> Optional[bool]:
         "Content-Type": "application/json"
     }
 
-    # Store all audio segments
+    # Store all audio segments and filenames
     all_audio_segments = []
+    audio_files = []
     
     for i, chunk in enumerate(chunks, 1):
         if total_chunks > 1:
             print(f"\n🔄 Processing part {i} of {total_chunks}...")
+            chunk_filename = f"part_{i:02d}.mp3"
+        else:
+            chunk_filename = "audio.mp3"
+        
+        audio_path = run_dir / chunk_filename
+        audio_files.append(chunk_filename)
         
         payload = {
             "text": chunk,
@@ -161,20 +175,13 @@ def text_to_speech(text: str) -> Optional[bool]:
                 
             response.raise_for_status()
 
-            # Create a temporary file for the audio chunk
-            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
-                temp_file.write(response.content)
-                temp_file_path = temp_file.name
+            # Save the audio chunk directly
+            with open(audio_path, "wb") as f:
+                f.write(response.content)
 
-            # Load the audio segment
-            audio_segment = AudioSegment.from_mp3(temp_file_path)
+            # Load the audio segment for playback
+            audio_segment = AudioSegment.from_mp3(audio_path)
             all_audio_segments.append(audio_segment)
-            
-            # Clean up the temporary file
-            try:
-                os.unlink(temp_file_path)
-            except Exception:
-                pass  # Ignore cleanup errors
 
         except requests.exceptions.RequestException as e:
             print(f"\n❌ API Error: {str(e)}")
@@ -190,19 +197,28 @@ def text_to_speech(text: str) -> Optional[bool]:
             return None
 
     try:
-        # Combine all audio segments
-        if all_audio_segments:
-            print("\n🔊 Playing generated audio...")
+        # Save text information
+        save_text_info(text, run_dir, timestamp, audio_files)
+        
+        # Combine all audio segments if there are multiple chunks
+        if len(all_audio_segments) > 1:
+            print("\n🔄 Combining audio segments...")
             combined_audio = sum(all_audio_segments)
+            combined_path = run_dir / "combined.mp3"
+            combined_audio.export(combined_path, format="mp3")
+            audio_files.append("combined.mp3")
             
-            # Save the combined audio
-            combined_audio.export(audio_path, format="mp3")
-            print(f"\n💾 Audio saved to: {audio_path}")
+            # Update the info file with the combined audio
+            save_text_info(text, run_dir, timestamp, audio_files)
             
-            # Play the audio
+            print("\n🔊 Playing combined audio...")
             play(combined_audio)
-            return True
-        return None
+        else:
+            print("\n🔊 Playing audio...")
+            play(all_audio_segments[0])
+        
+        print(f"\n💾 All files saved in: {run_dir}")
+        return True
 
     except Exception as e:
         print(f"\n❌ Error playing audio: {str(e)}")

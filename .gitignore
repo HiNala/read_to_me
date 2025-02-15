@@ -39,9 +39,11 @@ ENV/
 *.wav
 *.ogg
 
-# Output directory
+# Output directories
 output/
 output/*
+outputs/
+outputs/*
 
 # OS
 .DS_Store
