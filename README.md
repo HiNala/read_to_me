@@ -1,170 +1,214 @@
 # Read to Me CLI 🎙️
 
-A command-line tool that converts text to speech using Eleven Labs' Text-to-Speech (TTS) API. Simply paste text or provide a file, and listen to it being read aloud!
+A powerful command-line tool that converts text to speech using Eleven Labs' Text-to-Speech (TTS) API. Transform any text or document into natural-sounding audio with support for long-form content, web references, and organized output management.
 
-## Features ✨
+## ✨ Features
 
-- 📝 Direct text input support
-- 📂 File reading support (`.txt`, `.md`, `.docx`)
-- 🎯 High-quality text-to-speech using Eleven Labs API
-- 🔊 Instant audio playback
-- 🛡️ Secure API key management
-- ⚡ Simple and intuitive interface
-- 📚 Support for large text files (automatic chunking)
-- 💾 Organized output with timestamped directories
-- 📋 Comprehensive metadata preservation
-- 🔗 Smart URL and web reference processing
+### Core Features
+- 📝 **Text Input Options**
+  - Direct text pasting in terminal
+  - File reading (`.txt`, `.md`, `.docx`)
+  - Smart handling of web links and URLs
+- 🎯 **High-Quality Speech**
+  - Powered by Eleven Labs API
+  - Natural-sounding voice
+  - Configurable voice settings
 
-## Prerequisites 📋
+### Advanced Capabilities
+- 📚 **Large Text Support**
+  - Automatic content chunking
+  - Smart sentence boundary detection
+  - Seamless audio combining
+- 🔗 **URL Processing**
+  - Platform-specific handling (GitHub, YouTube, etc.)
+  - Web-friendly term conversion
+  - Natural URL narration
 
+### Organization & Management
+- 💾 **Structured Output**
+  - Timestamped directories
+  - Comprehensive metadata
+  - Individual and combined audio files
+- 🛡️ **Security & Reliability**
+  - Secure API key management
+  - Robust error handling
+  - Detailed logging
+
+## 📋 Prerequisites
+
+### Required Software
 - Python 3.8 or higher
-- FFmpeg (required for audio playback)
+- FFmpeg (for audio processing)
 - Eleven Labs API key
 
-### Installing FFmpeg
+### Optional Tools
+- Git (for cloning repository)
+- Text editor (for configuration)
 
-#### Windows
-1. Run the provided installation script:
-   ```bash
-   powershell -ExecutionPolicy Bypass -File install_ffmpeg.ps1
-   ```
-2. Restart your terminal after installation
+## 🚀 Installation
 
-#### macOS
+### 1. Get the Code
+```bash
+git clone https://github.com/HiNala/read_to_me.git
+cd read_to_me
+```
+
+### 2. Set Up Environment
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
+
+# macOS/Linux
+python -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Install FFmpeg
+
+#### Windows Users
+```bash
+powershell -ExecutionPolicy Bypass -File install_ffmpeg.ps1
+# Restart your terminal after installation
+```
+
+#### macOS Users
 ```bash
 brew install ffmpeg
 ```
 
-#### Linux (Ubuntu/Debian)
+#### Linux Users
 ```bash
 sudo apt-get update
 sudo apt-get install ffmpeg
 ```
 
-## Installation 🚀
+### 5. Configure API Key
+Create `.env` file in project root:
+```env
+ELEVEN_LABS_API_KEY=your_api_key_here
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/HiNala/read_to_me.git
-   cd read_to_me
-   ```
+## 💡 Usage Guide
 
-2. Create and activate a virtual environment:
-   ```bash
-   # Windows
-   python -m venv venv
-   .\venv\Scripts\activate
-
-   # macOS/Linux
-   python -m venv venv
-   source venv/bin/activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Create a `.env` file in the project root and add your Eleven Labs API key:
-   ```
-   ELEVEN_LABS_API_KEY=your_api_key_here
-   ```
-
-## Usage 💡
-
-1. Run the application:
+### Basic Usage
+1. Start the application:
    ```bash
    python main.py
    ```
 
-2. Choose your input method:
-   - Option 1: Paste text directly
-   - Option 2: Provide a file path (`.txt`, `.md`, or `.docx`)
+2. Choose input method:
+   ```
+   1️⃣ Paste text directly
+   2️⃣ Provide file path
+   ```
 
-3. Listen to your text being read aloud!
+3. Listen to the generated audio!
 
-### URL Processing 🔗
+### Advanced Features
 
-The application automatically processes URLs and web references to make them more natural for speech:
+#### URL Processing 🔗
+The application intelligently processes web references for natural speech:
 
-- **Common Platforms**
-  ```
-  https://github.com/user/repo -> "GitHub at github.com slash user slash repo"
-  https://youtube.com/watch?v=123 -> "YouTube video at youtube.com slash watch..."
-  ```
+```
+Input:                     Output Speech:
+---------------------------------------------------------
+github.com/user/repo   →   "GitHub at github dot com slash user slash repo"
+example.com/path       →   "website example dot com at path slash path"
+user@domain.com        →   "user at domain dot com"
+```
 
-- **General URLs**
-  ```
-  https://example.com/path -> "website example.com at path slash path"
-  http://site.org -> "website site dot org"
-  ```
+Special handling for popular platforms:
+- GitHub repositories
+- YouTube videos
+- LinkedIn profiles
+- Twitter/X posts
 
-- **Web Terms**
-  - `.com` → "dot com"
-  - `.org` → "dot org"
-  - `/` → "slash"
-  - `@` → "at"
-  - `_` → "underscore"
-
-This makes the audio output more natural when reading documents containing web references.
+#### Large Text Processing 📚
+For long documents, the application:
+1. Splits content into optimal chunks
+2. Processes each chunk separately
+3. Combines audio seamlessly
+4. Preserves all components
 
 ### Output Organization 📂
 
-Each time you run the program, it creates a new timestamped directory in the `outputs` folder:
-
 ```
 outputs/
-└── run_20240315_143022/          # Timestamped run directory
-    ├── text_info.json            # Metadata and original text
-    ├── audio.mp3                 # Single audio file (if text is small)
-    │   # OR for large texts:
-    ├── part_01.mp3              # First chunk of audio
-    ├── part_02.mp3              # Second chunk of audio
-    ├── part_XX.mp3              # Additional chunks
-    └── combined.mp3             # All chunks combined (if multiple parts)
+└── run_20240315_143022/          # Unique run directory
+    ├── text_info.json            # Run metadata
+    ├── audio.mp3                 # Single file output
+    │   # OR for long content:
+    ├── part_01.mp3              # Content chunk 1
+    ├── part_02.mp3              # Content chunk 2
+    └── combined.mp3             # Complete audio
 ```
 
-#### Metadata File (text_info.json)
-Each run's metadata file contains:
-- Timestamp of the conversion
-- Original text content
-- Text length
-- List of generated audio files
+#### Metadata Structure
+`text_info.json` contains:
+```json
+{
+    "timestamp": "2024-02-15 14:30:22",
+    "text_length": 1234,
+    "audio_files": ["part_01.mp3", "part_02.mp3", "combined.mp3"],
+    "text_content": "Original text content..."
+}
+```
 
-This organization makes it easy to:
-- Keep track of different conversions
-- Reference specific audio generations
-- Review the original text content
-- Access individual parts of long conversions
+## 🔧 Troubleshooting
 
-### Large Text Files
-For large text files, the application automatically:
-- Splits the text into manageable chunks
-- Processes each chunk separately
-- Saves individual chunk audio files
-- Combines them into a single audio file
-- Preserves all files for reference
+### Common Issues
 
-## Troubleshooting 🔧
+#### Audio Not Playing
+1. Verify FFmpeg installation:
+   ```bash
+   ffmpeg -version
+   ```
+2. Check system audio
+3. Ensure no other apps are blocking audio
 
-- **Missing API Key?** Make sure you have created a `.env` file with your Eleven Labs API key.
-- **Audio Not Playing?** Ensure FFmpeg is installed correctly:
-  - Windows: Run `install_ffmpeg.ps1` script
-  - macOS/Linux: Check if `ffmpeg` is in your PATH
-- **File Not Found?** Check that the file path is correct and the file exists.
-- **Package Missing?** Run `pip install -r requirements.txt` to install all dependencies.
-- **Output Files Missing?** Check if you have write permissions in the project directory.
+#### API Issues
+- Verify API key in `.env`
+- Check internet connection
+- Confirm API quota availability
 
-## Contributing 🤝
+#### File Processing
+- Ensure file exists
+- Check file permissions
+- Verify supported format
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Error Messages
+- ❌ **API Error**: Check API key and quota
+- ❌ **File Not Found**: Verify path and permissions
+- ❌ **FFmpeg Error**: Reinstall FFmpeg
+- ❌ **Output Error**: Check disk space and permissions
 
-## License 📄
+## 🤝 Contributing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+We welcome contributions! Here's how you can help:
 
-## Acknowledgments 🙏
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-- [Eleven Labs](https://elevenlabs.io/) for their excellent Text-to-Speech API
-- [FFmpeg](https://ffmpeg.org/) for audio processing capabilities
-- All the open-source libraries that made this project possible 
+Please ensure your code:
+- Follows existing style
+- Includes documentation
+- Has appropriate error handling
+
+## 📄 License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Eleven Labs](https://elevenlabs.io/) - State-of-the-art TTS API
+- [FFmpeg](https://ffmpeg.org/) - Audio processing capabilities
+- Open source community for various libraries
+- Contributors and users for feedback and support 
